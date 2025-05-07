@@ -75,6 +75,37 @@ public class DateUtilTest {
 	public void testYearNonLeapCheck_Valid() {
 	    Assert.assertTrue(DateUtil.monthDuration(2, 2023) == 28); // Non-leap year
 	}
+	
+	@Test
+	public void testD1_Day1_January_Valid() {
+	    DateUtil date = new DateUtil(1, 1, 2023);
+	    Assert.assertTrue(date.isValidDate());
+	}
+
+	@Test
+	public void testD1_Day2_January_Valid() {
+	    DateUtil date = new DateUtil(2, 1, 2023);
+	    Assert.assertTrue(date.isValidDate());
+	}
+
+	@Test
+	public void testTransition_Jan31ToFeb1_NonLeap() {
+	    DateUtil date = new DateUtil(31, 1, 2023);
+	    date.increment();
+	    Assert.assertEquals(1, date.getDay());
+	    Assert.assertEquals(2, date.getMonth());
+	    Assert.assertEquals(2023, date.getYear());
+	}
+
+	@Test
+	public void testTransition_Dec31ToJan1() {
+	    DateUtil date = new DateUtil(31, 12, 2023);
+	    date.increment();
+	    Assert.assertEquals(1, date.getDay());
+	    Assert.assertEquals(1, date.getMonth());
+	    Assert.assertEquals(2024, date.getYear());
+	}
+
 
 	
 }
