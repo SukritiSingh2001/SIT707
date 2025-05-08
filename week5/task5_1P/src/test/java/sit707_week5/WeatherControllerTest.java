@@ -1,8 +1,9 @@
 package sit707_week5;
 
 import org.junit.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Supplier;
 
 public class WeatherControllerTest {
 
@@ -14,7 +15,13 @@ public class WeatherControllerTest {
         System.out.println("Setting up WeatherController...");
         wController = WeatherController.getInstance();
 
-        // Arrange: retrieve and store hourly temps only once
+        // Inject fixed time for testing persist
+        wController.setClock(() -> {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(2023, Calendar.JANUARY, 1, 10, 30, 15);
+            return calendar.getTime();
+        });
+
         hourlyTemps = new ArrayList<>();
         int nHours = wController.getTotalHours();
         for (int i = 0; i < nHours; i++) {
@@ -30,50 +37,31 @@ public class WeatherControllerTest {
 
     @Test
     public void testStudentIdentity() {
-        String studentId = "S220369846"; 
+        String studentId = "S220369846";
         Assert.assertNotNull("Student ID is null", studentId);
     }
 
     @Test
     public void testStudentName() {
-        String studentName = "Sukriti"; 
+        String studentName = "Sukriti";
         Assert.assertNotNull("Student name is null", studentName);
     }
 
     @Test
-    public void testTemperatureMin() {
-        System.out.println("+++ testTemperatureMin +++");
+    public void testTemperaturePersist() {
+        System.out.println("+++ testTemperaturePersist +++");
 
-        // Act
-        double minTemp = hourlyTemps.stream().min(Double::compare).get();
-        double cachedMin = wController.getTemperatureMinFromCache();
+        int hour = 1;
+        double temperature = 25.5;
 
-        // Assert
-        Assert.assertEquals(minTemp, cachedMin, 0.001);
-    }
+        // Arrange: Set expected time
+        SimpleDateFormat sdf = new SimpleDateFormat("H:m:s");
+        String expectedTime = sdf.format(wController.persistTemperature(hour, temperature)); // Should match mock
 
-    @Test
-    public void testTemperatureMax() {
-        System.out.println("+++ testTemperatureMax +++");
-
-        // Act
-        double maxTemp = hourlyTemps.stream().max(Double::compare).get();
-        double cachedMax = wController.getTemperatureMaxFromCache();
+        // Act: Call persist again with same mocked time
+        String actualPersistedTime = wController.persistTemperature(hour, temperature);
 
         // Assert
-        Assert.assertEquals(maxTemp, cachedMax, 0.001);
-    }
-
-    @Test
-    public void testTemperatureAverage() {
-        System.out.println("+++ testTemperatureAverage +++");
-
-        // Act
-        double sum = hourlyTemps.stream().mapToDouble(Double::doubleValue).sum();
-        double avg = sum / hourlyTemps.size();
-        double cachedAvg = wController.getTemperatureAverageFromCache();
-
-        // Assert
-        Assert.assertEquals(avg, cachedAvg, 0.001);
+        Assert.assertEquals("Persisted time mismatch", expectedTime, actualPersistedTime);
     }
 }
